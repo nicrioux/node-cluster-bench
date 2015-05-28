@@ -15,7 +15,7 @@ Vagrant.configure(2) do |config|
       provider.token = vagrant_config["do_api_key"]
       provider.image = "docker"
       provider.region = "sfo1"
-      provider.size = "2gb"  # 4gb 8gb
+      provider.size = "8gb"  # 2gb 8gb 16gb
     end
 
   config.vm.define "client" do |client|

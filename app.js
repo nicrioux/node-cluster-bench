@@ -14,4 +14,4 @@ http.createServer(function(request, response) {
      	response.end(data, 'binary');
 	});
 
-}).listen(3000);
+}).listen(process.argv[2] || 3000 );
