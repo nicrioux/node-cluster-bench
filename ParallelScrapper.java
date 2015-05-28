@@ -1,21 +1,29 @@
+package io.nr;
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 import java.net.*;
 import java.lang.*;
 import java.util.concurrent.*;
-/**
-* Sample code for async parallel workers using Executors & Callables. 
-*/
 
+/**
+*  Small program that extract resource reference (js,img,css) usage
+*  from a given url. Small demo for async parallel workers using Executors & Callables. 
+*/
 public class ParallelScrapper{
-    public static ExecutorService executor = Executors.newFixedThreadPool(500);
+    static ExecutorService executor;
    
     public static void main(String[] args) throws InterruptedException, ExecutionException{
-        ScrapeUrls( Arrays.asList(
+        List<String> urls = Arrays.asList(
             "http://www.liveclicker.com/",
             "https://www.facebook.com/",
-            "https://twitter.com/"));
+            "https://twitter.com/");
+
+        // adjust thread pool based on amount of work supplied
+        executor = Executors.newFixedThreadPool(urls.size() * 4);
+
+        // perform the analysis
+        ScrapeUrls( urls );
 
         executor.shutdown();
     }
@@ -39,11 +47,13 @@ public class ParallelScrapper{
     }
 } 
 
-// Responsible for downloading a url content and dividing/delegating work by resource type
+/**
+* Object responsible for downloading a url content and dividing/delegating work by resource type.
+*/
 class ResourceStatsScrapper implements Callable<ResourceStats>{
     private String sourceUrl;
 
-    public ResourceStatsScrapper(String url ){
+    ResourceStatsScrapper(String url ){
         this.sourceUrl = url;
     }
 
@@ -62,23 +72,12 @@ class ResourceStatsScrapper implements Callable<ResourceStats>{
         return new ResourceStats( this.sourceUrl );
     }
 
-    private String getPageAsString( URL url )throws IOException{
-        System.out.println("Retrieving url "+ url.toString() );
-        URLConnection con = url.openConnection();
-        InputStreamReader isr = new InputStreamReader(con.getInputStream());
-        int numCharsRead;
-        char[] charArray = new char[1024];
-        StringBuffer sb = new StringBuffer();
-
-        while ((numCharsRead = isr.read(charArray)) > 0) {
-            sb.append(charArray, 0, numCharsRead);
-        }
-
-        System.out.println("Retrieved url "+ url.toString() +" page size["+ sb.length() +"]" );
-        return sb.toString();
-    }
-   
-    private ResourceStats doScrape( String url)throws IOException, InterruptedException, ExecutionException {
+    /**
+    * Download content and analyse resource reference
+    * @param url String url to download
+    * @return ResourceStats resource analysis result
+    */
+    private ResourceStats doScrape( String url )throws IOException, InterruptedException, ExecutionException {
         long start = System.currentTimeMillis();
         ResourceStats stats = new ResourceStats(url);
         URL urlObj = new URL(url);
@@ -101,6 +100,25 @@ class ResourceStatsScrapper implements Callable<ResourceStats>{
         stats.setExecTime( System.currentTimeMillis() - start);
 
         return stats;
+    }
+
+    /**
+    * Download web page at url given and return it as a string
+    */
+    private String getPageAsString( URL url )throws IOException{
+        System.out.println("Retrieving url "+ url.toString() );
+        URLConnection con = url.openConnection();
+        InputStreamReader isr = new InputStreamReader(con.getInputStream());
+        int numCharsRead;
+        char[] charArray = new char[1024];
+        StringBuffer sb = new StringBuffer();
+
+        while ((numCharsRead = isr.read(charArray)) > 0) {
+            sb.append(charArray, 0, numCharsRead);
+        }
+
+        System.out.println("Retrieved url "+ url.toString() +" page size["+ sb.length() +"]" );
+        return sb.toString();
     }
 }
 
@@ -127,14 +145,13 @@ class ResourceCounter implements Callable<Integer>{
         while( matcher.find() ){
             count++;
         }  
-
-        //System.out.println("ResourceCounter ["+ this.pattern +"] count["+ count +"]" );
-
         return new Integer(count);
     }
 }
 
-// holds resource counts of a given source url
+/**
+* Object used to contain url resource analysis result 
+*/
 class ResourceStats{ 
     private String sourceUrl;
     private int cssCount;
@@ -142,7 +159,7 @@ class ResourceStats{
     private int jsCount;
     private long execTime;
 
-    public ResourceStats( String sourceUrl ){
+    ResourceStats( String sourceUrl ){
         this.sourceUrl = sourceUrl;
     }
 
@@ -166,19 +183,19 @@ class ResourceStats{
         return sb.toString();
     }
 
-    public String getSourceUrl(){
+    String getSourceUrl(){
         return this.sourceUrl;
     }
-    public void setImgCount( int count ){
+    void setImgCount( int count ){
         this.imgCount = count;
     }
-    public void setCssCount( int count ){
+    void setCssCount( int count ){
         this.cssCount = count;
     }
-    public void setJsCount( int count ){
+    void setJsCount( int count ){
         this.jsCount = count;
     }
-    public void setExecTime( long execTime ){
+    void setExecTime( long execTime ){
         this.execTime = execTime;
     }
 }
