@@ -1,16 +1,17 @@
 var http = require('http');
-var exec = require('child_process').exec;
+var fs = require('fs');
 
 http.createServer(function(request, response) {
 	response.writeHead(200, {
-		'Content-Type': 'text/plain'
+		'Content-Type': 'image/png'
 	});
 
-	response.write("app output");
-	response.end();
-	// var java_child = exec('java -cp . PingGenerator',
-	// 	function (error, stdout, stderr) {
-	//     response.write( stdout );
-	//     response.end();
-	// });
+	// serve small image
+	fs.readFile('./square.png', function (err, data) {
+	    if (err) {
+	        throw err;
+	    }
+     	response.end(data, 'binary');
+	});
+
 }).listen(3000);
