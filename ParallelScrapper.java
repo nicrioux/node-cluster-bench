@@ -22,18 +22,17 @@ public class ParallelScrapper{
 
     // go thru supplied urls, download them and count resources (using subworkers)
     private static void ScrapeUrls(List<String> urls) throws InterruptedException, ExecutionException{
-        List<Future<ResourceStats>> workers = new ArrayList<Future<ResourceStats>>();
         List<Callable<ResourceStats>> callables = new ArrayList<Callable<ResourceStats>>();
-        // submit work to be executed asynchronously
+        
         for(String url : urls ){
             Callable<ResourceStats> scrapper = new ResourceStatsScrapper( url );
             callables.add( scrapper );
-            //Future<ResourceStats> future = executor.submit(scrapper);
-           // workers.add(future);
         }
 
+        // submit work to be executed in parallel, accumulate fullfilled promises
         List<Future<ResourceStats>> futures = executor.invokeAll(callables);
 
+        // display results
         for(Future<ResourceStats> future : futures){
             System.out.println(future.get());
         }
@@ -66,8 +65,7 @@ class ResourceStatsScrapper implements Callable<ResourceStats>{
     private String getPageAsString( URL url )throws IOException{
         System.out.println("Retrieving url "+ url.toString() );
         URLConnection con = url.openConnection();
-        InputStream is = con.getInputStream();
-        InputStreamReader isr = new InputStreamReader(is);
+        InputStreamReader isr = new InputStreamReader(con.getInputStream());
         int numCharsRead;
         char[] charArray = new char[1024];
         StringBuffer sb = new StringBuffer();
@@ -151,7 +149,7 @@ class ResourceStats{
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        sb.append("Source:");
+        sb.append("\nSource:");
         sb.append( sourceUrl );
         sb.append("\n");
         sb.append("Stats: css[");
