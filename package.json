@@ -1,0 +1,15 @@
+{
+  "name": "node-cluster-bench",
+  "version": "0.0.0",
+  "description": "",
+  "main": "cluster.js",
+  "scripts": {
+    "start": "node cluster.js &"
+  },
+  "repository": "",
+  "author": "",
+  "license": "BSD",
+  "dependencies": {
+   
+  }
+}
