@@ -1,4 +1,4 @@
- var http = require('http');
+var http = require('http');
 var exec = require('child_process').exec;
 
 http.createServer(function(request, response) {
@@ -6,9 +6,11 @@ http.createServer(function(request, response) {
 		'Content-Type': 'text/plain'
 	});
 
-	var java_child = exec('java -cp . PingGenerator',
-		function (error, stdout, stderr) {
-	    response.write( stdout );
-	    response.end();
-	});
+	response.write("app output");
+	response.end();
+	// var java_child = exec('java -cp . PingGenerator',
+	// 	function (error, stdout, stderr) {
+	//     response.write( stdout );
+	//     response.end();
+	// });
 }).listen(3000);
