@@ -14,6 +14,6 @@ if (cluster.isMaster) {
 }
 
 // handle dying workers
-cluster.on('exit', function (worker) {
-    cluster.fork();
-});
+// cluster.on('exit', function (worker) {
+//     cluster.fork();
+// });
